@@ -1,0 +1,11 @@
+# PUT http://localhost:8080/patients/{id}
+PUT http://localhost:8080/patients/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+
+{
+    "name": "Marsal Updated",
+    "email": "marsal.updated@example.com",
+    "address": "456 Oak Avenue",
+    "dateOfBirth": "1999-03-09",
+    "registrationDate": "2023-10-10"
+}
