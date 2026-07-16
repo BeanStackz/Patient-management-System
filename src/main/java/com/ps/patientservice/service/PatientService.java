@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.ps.patientservice.grpc.BillingServiceGrpcClient;
+import com.ps.patientservice.kafka.KafkaProducer;
 import org.springframework.stereotype.Service;
 
 import com.ps.patientservice.dto.PatientRequestDTO;
@@ -19,11 +20,16 @@ import com.ps.patientservice.repository.PatientRepository;
 public class PatientService {
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
 
-    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
+    public PatientService(PatientRepository patientRepository,
+                          BillingServiceGrpcClient billingServiceGrpcClient,
+                          KafkaProducer kafkaProducer
+                          ) {
         this.patientRepository = patientRepository;
         this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public List<PatientResponseDTO> getPatients() {
@@ -39,13 +45,29 @@ public class PatientService {
         }
 
         Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
-        billingServiceGrpcClient.createBillingAccount(
-                newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail()
-        );
+
+        try {
+            System.out.println("--> Calling gRPC billing service...");
+            billingServiceGrpcClient.createBillingAccount(
+                    newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail()
+            );
+            System.out.println("--> gRPC billing service SUCCESS!");
+        } catch (Exception e) {
+            System.err.println("--> gRPC billing service FAILED: " + e.getClass().getName());
+            e.printStackTrace();
+        }
+
+        try {
+            System.out.println("--> Sending Kafka Event...");
+            kafkaProducer.sendEvent(newPatient);
+            System.out.println("--> Kafka Event SUCCESS!");
+        } catch (Exception e) {
+            System.err.println("--> Kafka FAILED: " + e.getClass().getName());
+            e.printStackTrace();
+        }
 
         return PatientMapper.toDto(newPatient);
     }
-
     public PatientResponseDTO updatePatient(UUID id, PatientRequestDTO patientRequestDTO) {
         Patient existingPatient = patientRepository.findById(id)
                 .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + id));
