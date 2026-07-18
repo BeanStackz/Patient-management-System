@@ -2,8 +2,8 @@ POST http://localhost:8080/patients
 Content-Type: application/json
 
 {
-    "name": "Marsal.dev7.test",
-    "email": "marsal.dev7.test@example.com",
+    "name": "Marsal.dev8.test",
+    "email": "marsal.dev8.test@example.com",
     "address": "123 main street",
     "dateOfBirth": "1999-03-09",
     "registrationDate": "2023-10-10"
