@@ -1,4 +1,4 @@
-package com.ps.patientservice.config;
+package com.ps.patientservice.kafka;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -16,16 +16,18 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
 
-    @Value("${spring.kafka.bootstrap-servers:localhost:9094}")
+    // Reads from application.properties, defaults to localhost:9092 if not specified
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String bootstrapServers;
 
     @Bean
     public ProducerFactory<String, byte[]> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
-        // Replace with your bootstrap servers if different
+
+        // 1. Where to find Kafka
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
-        // Use StringSerializer for keys and ByteArraySerializer for values
+        // 2. How to serialize the key (String) and the value (Protobuf byte array)
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
 
