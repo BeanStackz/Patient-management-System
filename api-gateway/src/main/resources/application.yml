@@ -7,6 +7,15 @@ spring:
       server:
         webflux:
           routes:
+            ## http://localhost:8084/auth/login
+            ## API GATEWAY -> http://auth-service:8085/login
+            - id: auth-service-route
+              uri: http://auth-service:8085
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=1
+
             ## REST CLIENT -> http://localhost:8084/api/patients
             ## API GATEWAY -> http://patient-service:8080/patients
             ## PATIENT SERVICE (SPRING BOOT APP) -> /patients -> Patients Array
@@ -16,6 +25,7 @@ spring:
                 - Path=/api/patients/**
               filters:
                 - StripPrefix=1
+                - JwtValidation
 
             ## REST CLIENT -> http://localhost:8084/api-docs/patients
             ## API GATEWAY -> http://patient-service:8080/v3/api-docs
@@ -25,3 +35,10 @@ spring:
                 - Path=/api-docs/patients
               filters:
                 - RewritePath=/api-docs/patients,/v3/api-docs
+
+            - id: api-docs-auth-route
+              uri: http://auth-service:8085
+              predicates:
+                - Path=/api-docs/auth
+              filters:
+                - RewritePath=/api-docs/auth,/v3/api-docs
