@@ -35,4 +35,25 @@ public class AuthIntegrationTest {
                 .extract().response();
         System.out.println("Generated Token: "+ response.jsonPath().getString("token"));
     }
+
+    @Test
+    public void shouldReturnUnauthorizedOnInvalidToken(){
+        // 1. Arrange
+        // 2. act
+        // 3. assert
+
+        String loginPayload = """
+                {
+                    "email" : "invalid_user@test.com",
+                    "password": "wrong_Password123"
+                }
+                """;
+        given()
+                .contentType("application/json")
+                .body(loginPayload)
+                .post("/auth/login")
+                .then()
+                .statusCode(401);
+    }
+
 }
